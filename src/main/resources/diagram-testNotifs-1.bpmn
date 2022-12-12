@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_00qsem0" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.5.1" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.18.0">
+  <bpmn:process id="SendNotification" name="SendNotification" isExecutable="true">
+    <bpmn:startEvent id="StartEvent_1" name="StartEvent">
+      <bpmn:extensionElements>
+        <camunda:formData>
+          <camunda:formField id="city" label="city" type="string" defaultValue="Minsk,by" />
+        </camunda:formData>
+      </bpmn:extensionElements>
+      <bpmn:outgoing>Flow_0586j4i</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:exclusiveGateway id="Gateway_0z5v6jv">
+      <bpmn:incoming>Flow_0umr2pk</bpmn:incoming>
+      <bpmn:outgoing>Flow_09d5dpk</bpmn:outgoing>
+      <bpmn:outgoing>Flow_193mawc</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:sequenceFlow id="Flow_09d5dpk" name="ExtremeCold" sourceRef="Gateway_0z5v6jv" targetRef="Activity_0ens6is">
+      <bpmn:documentation>Холодрыга! Объявлен оранжевый уровень опасности!</bpmn:documentation>
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${response.prop("main").prop("temp").numberValue() - 273.15 &lt; 25}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_193mawc" name="ExtremeHeat" sourceRef="Gateway_0z5v6jv" targetRef="Activity_1ly1fqg">
+      <bpmn:documentation>Жарень! Объявлен оранжевый уровень опасности!</bpmn:documentation>
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${response.prop("main").prop("temp").numberValue() - 273.15 &gt; 25}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:userTask id="Activity_1ly1fqg" name="Heat Notification Sent">
+      <bpmn:extensionElements>
+        <camunda:formData>
+          <camunda:formField id="temp_1" label="temperature, K" type="string" defaultValue="${response.prop(&#34;main&#34;).prop(&#34;temp&#34;).numberValue()}" />
+          <camunda:formField id="temp_2" label="temperature, C" type="string" defaultValue="${response.prop(&#34;main&#34;).prop(&#34;temp&#34;).numberValue() - 273.15}" />
+        </camunda:formData>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_193mawc</bpmn:incoming>
+      <bpmn:outgoing>Flow_1yn46ph</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="Activity_0ens6is" name="Cold Notification Sent">
+      <bpmn:extensionElements>
+        <camunda:formData>
+          <camunda:formField id="temp_1" label="temperature, K" type="string" defaultValue="${response.prop(&#34;main&#34;).prop(&#34;temp&#34;).numberValue()}" />
+          <camunda:formField id="temp_2" label="temperature, C" type="string" defaultValue="${response.prop(&#34;main&#34;).prop(&#34;temp&#34;).numberValue() - 273.15}" />
+        </camunda:formData>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_09d5dpk</bpmn:incoming>
+      <bpmn:outgoing>Flow_0kjkqeh</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:endEvent id="Event_10a0szl" name="EndEvent">
+      <bpmn:incoming>Flow_1yn46ph</bpmn:incoming>
+      <bpmn:incoming>Flow_0kjkqeh</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_1yn46ph" sourceRef="Activity_1ly1fqg" targetRef="Event_10a0szl" />
+    <bpmn:sequenceFlow id="Flow_0kjkqeh" sourceRef="Activity_0ens6is" targetRef="Event_10a0szl" />
+    <bpmn:sequenceFlow id="Flow_0586j4i" sourceRef="StartEvent_1" targetRef="Activity_0trovwy" />
+    <bpmn:sequenceFlow id="Flow_0umr2pk" sourceRef="Activity_0trovwy" targetRef="Gateway_0z5v6jv" />
+    <bpmn:serviceTask id="Activity_0trovwy" name="Get Data">
+      <bpmn:extensionElements>
+        <camunda:connector>
+          <camunda:inputOutput>
+            <camunda:inputParameter name="method">GET</camunda:inputParameter>
+            <camunda:inputParameter name="headers">
+              <camunda:map>
+                <camunda:entry key="Content-type">application/json</camunda:entry>
+              </camunda:map>
+            </camunda:inputParameter>
+            <camunda:inputParameter name="url">http://api.openweathermap.org/data/2.5/weather?q=Minsk,by&amp;APPID=7ae617ff0b66e4d68489b6b80ba3c721</camunda:inputParameter>
+            <camunda:outputParameter name="statusCode">
+              <camunda:script scriptFormat="JavaScript">statusCode;</camunda:script>
+            </camunda:outputParameter>
+            <camunda:outputParameter name="response">
+              <camunda:script scriptFormat="JavaScript">S(response);</camunda:script>
+            </camunda:outputParameter>
+          </camunda:inputOutput>
+          <camunda:connectorId>http-connector</camunda:connectorId>
+        </camunda:connector>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_0586j4i</bpmn:incoming>
+      <bpmn:outgoing>Flow_0umr2pk</bpmn:outgoing>
+    </bpmn:serviceTask>
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="SendNotification">
+      <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="StartEvent_1">
+        <dc:Bounds x="132" y="202" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="127" y="245" width="50" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_0z5v6jv_di" bpmnElement="Gateway_0z5v6jv" isMarkerVisible="true">
+        <dc:Bounds x="395" y="195" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_03qskxx_di" bpmnElement="Activity_1ly1fqg">
+        <dc:Bounds x="620" y="90" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0656ag6_di" bpmnElement="Activity_0ens6is">
+        <dc:Bounds x="620" y="280" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_10a0szl_di" bpmnElement="Event_10a0szl">
+        <dc:Bounds x="882" y="202" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="928" y="213" width="46" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0zs8d5b_di" bpmnElement="Activity_0trovwy">
+        <dc:Bounds x="230" y="180" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_09d5dpk_di" bpmnElement="Flow_09d5dpk">
+        <di:waypoint x="420" y="245" />
+        <di:waypoint x="420" y="320" />
+        <di:waypoint x="620" y="320" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="399" y="298" width="62" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_193mawc_di" bpmnElement="Flow_193mawc">
+        <di:waypoint x="420" y="195" />
+        <di:waypoint x="420" y="130" />
+        <di:waypoint x="620" y="130" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="399" y="133" width="62" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1yn46ph_di" bpmnElement="Flow_1yn46ph">
+        <di:waypoint x="720" y="130" />
+        <di:waypoint x="900" y="130" />
+        <di:waypoint x="900" y="202" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0kjkqeh_di" bpmnElement="Flow_0kjkqeh">
+        <di:waypoint x="720" y="320" />
+        <di:waypoint x="900" y="320" />
+        <di:waypoint x="900" y="238" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0586j4i_di" bpmnElement="Flow_0586j4i">
+        <di:waypoint x="168" y="220" />
+        <di:waypoint x="230" y="220" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0umr2pk_di" bpmnElement="Flow_0umr2pk">
+        <di:waypoint x="330" y="220" />
+        <di:waypoint x="395" y="220" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>
